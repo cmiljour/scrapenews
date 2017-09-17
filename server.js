@@ -5,14 +5,22 @@ var mongoose = require("mongoose");
 // Require request and cheerio. This makes the scraping possible
 var request = require("request");
 var cheerio = require("cheerio");
+var logger = require("morgan");
+
+mongoose.Promise = Promise;
 
 // Initialize Express
 var app = express();
 
+app.use(logger("dev"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.text());
 app.use(bodyParser.json({ type: "application/vnd.api+json" }));
+
+// Make public a static dir
+app.use(express.static("public"));
+
 
 // Database configuration
 var databaseUrl = "scraper";
