@@ -5,35 +5,32 @@
     $.getJSON("/articles", function (data){
         for (var i = 0; i < data.length; i++) {
             // Display the apropos information on the page
-            $("#articles").append(`<p> ${data[i].title} <br /><a href='${data[i].link}'>Link</a></p>`);
-          }
+            $("#articles").append(
+            `<br/>
+            <div class="jumbotron" data-id=${data[i]._id}>
+            <p> ${data[i].title} 
+            <br/>
+            <a href='${data[i].link}'>${data[i].link}</a>
+            </p>
+            <div class="btn btn-danger scrape-new" id="saveCommentBox">Save Comment</div>
+            <label for="comment">Comment:</label>
+            <textarea id="textInputted" class="form-control" rows="3"></textarea>
+            </div>`);
+            
+        };
     });
   });
 
-          //     // The title of the article
-        //     $("#articles").append("<h2>" + data.title + "</h2>");
-        //     // The link to the article
-        //     $("#articles").append(`<p><a href='${data.link}'>Google</a></p>`);
-        //     // A textarea to add a new note body
-        //     $("#articles").append(`<p>${data.comment}`);
-        // }
-
   $(document).on("click", "#scrapeArticles", function() {
-    
     $.ajax({
       method: "GET",
       url: "/scrape/"
-    })
-      // With that done, add the note information to the page
-      .done(function(data) {
-        console.log(data);
-      });
+    });
   });
 
-
-
   // When you click the savenote button
-  $(document).on("click", "#savenote", function() {
+  $(document).on("click", "#saveCommentBox", function() {
+      alert("You clicked some shit!");
     // Grab the id associated with the article from the submit button
     var thisId = $(this).attr("data-id");
   
@@ -42,10 +39,8 @@
       method: "POST",
       url: "/articles/" + thisId,
       data: {
-        // Value taken from title input
-        title: $("#titleinput").val(),
         // Value taken from note textarea
-        body: $("#bodyinput").val()
+        body: $("#textInputted").val()
       }
     })
       // With that done
@@ -56,7 +51,7 @@
         $("#articles").empty();
       });
   
-    // Also, remove the values entered in the input and textarea for note entry
-    $("#titleinput").val("");
-    $("#bodyinput").val("");
+    // // Also, remove the values entered in the input and textarea for note entry
+    // $("#titleinput").val("");
+    // $("#bodyinput").val("");
   });
