@@ -2,10 +2,14 @@
 var express = require("express");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
+var exphbs = require("express-handlebars");
 // Require request and cheerio. This makes the scraping possible
 var request = require("request");
 var cheerio = require("cheerio");
 var logger = require("morgan");
+// Requiring our Note and Article models
+var Comment = require("./models/Comment.js");
+var Article = require("./models/Article.js");
 
 mongoose.Promise = Promise;
 
@@ -21,74 +25,98 @@ app.use(bodyParser.json({ type: "application/vnd.api+json" }));
 // Make public a static dir
 app.use(express.static("public"));
 
+// Setup handlebars
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
 
-// Database configuration
-var databaseUrl = "scraper";
-var collections = ["scrapedData"];
+// Database configuration with mongoose
+mongoose.connect("mongodb://heroku_ndm9fhtf:u0i7ttnpphb42bpk7rqpgpk00j@ds135534.mlab.com:35534/heroku_ndm9fhtf");
+var db = mongoose.connection;
 
-// Hook mongojs configuration to the db variable
-// var db = mongojs(databaseUrl, collections);
-// db.on("error", function(error) {
-//   console.log("Database Error:", error);
-// });
+// Show any mongoose errors
+db.on("error", function(error) {
+  console.log("Mongoose Error: ", error);
+});
+
+// Once logged in to the db through mongoose, log a success message
+db.once("open", function() {
+  console.log("Mongoose connection successful.");
+});
 
 // Main route (simple Hello World Message)
 app.get("/", function(req, res) {
-  res.send("Hello world");
+  res.render("index");
 });
 
-// Retrieve data from the db
-app.get("/all", function(req, res) {
-  // Find all results from the scrapedData collection in the db
-  db.scrapedData.find({}, function(error, found) {
-    // Throw any errors to the console
-    if (error) {
-      console.log(error);
-    }
-    // If there are no errors, send the data to the browser as json
-    else {
-      res.json(found);
-    }
-  });
-});
-
-// Scrape data from one site and place it into the mongodb db
+// A GET request to scrape the echojs website
 app.get("/scrape", function(req, res) {
-  // Make a request for the news section of ycombinator
+  // First, we grab the body of the html with request
   request("https://news.ycombinator.com/", function(error, response, html) {
-    // Load the html body from request into cheerio
+    // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(html);
-    // For each element with a "title" class
+    // Now, we grab every h2 within an article tag, and do the following:
     $(".title").each(function(i, element) {
-      // Save the text and href of each link enclosed in the current element
-      var title = $(element).children("a").text();
-      var link = $(element).children("a").attr("href");
 
-      // If this found element had both a title and a link
-      if (title && link) {
-        // Insert the data in the scrapedData db
-        db.scrapedData.insert({
-          title: title,
-          link: link
-        },
-        function(err, inserted) {
-          if (err) {
-            // Log the error if one is encountered during the query
-            console.log(err);
-          }
-          else {
-            // Otherwise, log the inserted data
-            console.log(inserted);
-          }
-        });
-      }
+      // Save an empty result object
+      var result = {};
+
+      // Add the text and href of every link, and save them as properties of the result object
+      result.title = $(element).children("a").text();
+      result.link = $(element).children("a").attr("href");
+
+      // Using our Article model, create a new entry
+      // This effectively passes the result object to the entry (and the title and link)
+      var entry = new Article(result);      
+      entry.save(function(err, doc) {
+        // Log any errors
+        if (err) {
+          console.log(err);
+        }
+        // Or log the doc
+        // else {
+        //   console.log(doc);
+        // }
+      });
+
     });
   });
-
-  // Send a "Scrape Complete" message to the browser
+  // Tell the browser that we finished scraping the text
   res.send("Scrape Complete");
 });
 
+// This will get the articles we scraped from the mongoDB
+app.get("/articles", function(req, res) {
+  // Grab every doc in the Articles array
+  Article.find({}, function(error, doc) {
+    // Log any errors
+    if (error) {
+      console.log(error);
+    }
+    // Or send the doc to the browser as a json object
+    else {
+      res.json(doc);
+    }
+  });
+});
+
+// Grab an article by it's ObjectId
+app.get("/articles/:id", function(req, res) {
+  // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
+  Article.findOne({ "_id": req.params.id })
+  // ..and populate all of the notes associated with it
+  .populate("note")
+  // now, execute our query
+  .exec(function(error, doc) {
+    // Log any errors
+    if (error) {
+      console.log(error);
+    }
+    // Otherwise, send the doc to the browser as a json object
+    else {
+      res.json(doc);
+    }
+  });
+});
 
 // Listen on port 3000
 app.listen(3000, function() {
