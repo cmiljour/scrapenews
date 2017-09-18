@@ -67,17 +67,25 @@ app.get("/scrape", function(req, res) {
 
       // Using our Article model, create a new entry
       //This effectively passes the result object to the entry (and the title and link)
-      var entry = new Article(result);      
-      entry.save(function(err, doc) {
-        // Log any errors
-        if (err) {
-          console.log(err);
-        }
-        // Or log the doc
-        else {
-          console.log(doc);
-        }
-    });
+      var entry = new Article(result); 
+
+      Article.count({"title": entry.title}, function (err, count){
+        if (count > 0){
+          console.log(`document exists: ${entry.title}`);
+          return;
+        } else {
+            entry.save(function(err, doc) {
+              // Log any errors
+              if (err) {
+                console.log(err);
+              }
+              // Or log the doc
+              else {
+                console.log(`db updated`);
+              }
+            });
+          } 
+      });
   });
 });
 
@@ -104,7 +112,6 @@ app.post("/articles/:id", function(req, res) {
   console.log(req.body.id);
   var newComment = new Comment(req.body)
 
-
   newComment.save(function(error,doc){
     if (error){
       console.log(error);
@@ -123,6 +130,7 @@ app.post("/articles/:id", function(req, res) {
       });
     }
   });
+
   // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
   // Article.findOne({ "_id": req.params.id }, function (err, article){
   // })
@@ -143,6 +151,18 @@ app.post("/articles/:id", function(req, res) {
   //     })
   //   }
   // });
+});
+
+app.get("/saved", function(req, res) {
+  // Grab every doc in the Articles array
+  Article.find().where('comment').exists()
+    .populate("comment").exec(function(error,doc){
+    if (error){
+      console.log(error);
+    } else {
+      res.send(doc);
+    }
+  });
 });
 
 // Listen on port 3000
