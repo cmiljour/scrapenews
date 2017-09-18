@@ -44,8 +44,10 @@
             <a href='${data[i].link}'>${data[i].link}</a>
             </p>
             <div class="panel panel-default">
-              <div class="panel-body">${data[i].comment.body}</div>
+              <div class="panel-body">You Commented:  ${data[i].comment.body}</div>
             </div>
+            <br/>
+            <div data-id=${data[i]._id} class="btn btn-danger scrape-new" id="delComment">Delete Comment</div>
             </div>`);    
         };
     });
@@ -80,4 +82,15 @@
     // // Also, remove the values entered in the input and textarea for note entry
     // $("#titleinput").val("");
     // $("#bodyinput").val("");
+  });
+
+  $(document).on("click", "#delComment", function() {
+    var thisId = $(this).attr("data-id");
+    $.ajax({
+      method: "DELETE",
+      url: "/delete/" + thisId,
+      data: {
+        id: thisId
+      }
+    });
   });
