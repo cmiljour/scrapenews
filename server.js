@@ -159,15 +159,15 @@ app.delete("/delete/:id", function(req, res) {
   Article.find({_id: req.params.id }, function(err, document){
     commentID = document[0].comment;
     console.log(commentID);
+    Comment.remove({ _id: commentID}, function(err) {
+      if (!err) {
+              console.log("no error");
+      }
+      else {
+              console.log("there is an error");
+      }
   });
-//   Comment.remove({ _id: req.body.id }, function(err) {
-//     if (!err) {
-//             console.log("no error");
-//     }
-//     else {
-//             console.log("there is an error");
-//     }
-// });
+});
   
   
 });
