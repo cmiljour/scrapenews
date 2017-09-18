@@ -95,28 +95,54 @@ app.get("/articles", function(req, res) {
     // Or send the doc to the browser as a json object
     else {
       res.json(doc);
-      console.log(doc);
     }
   });
 });
 
 // Grab an article by it's ObjectId
-app.get("/articles/:id", function(req, res) {
-  // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
-  Article.findOne({ "_id": req.params.id })
-  // ..and populate all of the notes associated with it
-  .populate("note")
-  // now, execute our query
-  .exec(function(error, doc) {
-    // Log any errors
-    if (error) {
+app.post("/articles/:id", function(req, res) {
+  console.log(req.body.id);
+  var newComment = new Comment(req.body)
+
+
+  newComment.save(function(error,doc){
+    if (error){
       console.log(error);
     }
-    // Otherwise, send the doc to the browser as a json object
+
     else {
-      res.json(doc);
+      Article.findOneAndUpdate({"_id":req.params.id}, {"comment": doc.id})
+
+      .exec(function(err, doc){
+        if(err){
+          console.log(err);
+        }
+        else {
+          res.send(doc);
+        }
+      });
     }
   });
+  // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
+  // Article.findOne({ "_id": req.params.id }, function (err, article){
+  // })
+  // // ..and populate all of the notes associated with it
+  // // .populate("Comment")
+  // // now, execute our query
+  // .exec(function(error, doc) {
+  //   // Log any errors
+  //   if (error) {
+  //     console.log(error);
+  //   }
+  //   // Otherwise, send the doc to the browser as a json object
+  //   else {
+  //     Comment.update({_id: doc.id}, {
+  //       body: newComment
+  //     }, function (err, affected, resp) {
+  //       console.log(resp);
+  //     })
+  //   }
+  // });
 });
 
 // Listen on port 3000
