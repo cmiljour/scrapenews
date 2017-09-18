@@ -13,9 +13,8 @@
             <br/>
             <a href='${data[i].link}'>${data[i].link}</a>
             </p>
+            <textarea id="${data[i]._id}" class="form-control" rows="3" placeholder="Enter Comment Here"></textarea>
             <div data-id=${data[i]._id} class="btn btn-danger scrape-new" id="saveCommentBox">Save Comment</div>
-            <label for="comment">Comment:</label>
-            <textarea id="${data[i]._id}" class="form-control" rows="3"></textarea>
             </div>`);
             
         };
