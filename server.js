@@ -7,7 +7,7 @@ var exphbs = require("express-handlebars");
 var request = require("request");
 var cheerio = require("cheerio");
 var logger = require("morgan");
-// Requiring our Note and Article models
+// Requiring our Comment and Article models
 var Comment = require("./models/Comment.js");
 var Article = require("./models/Article.js");
 
@@ -50,19 +50,19 @@ db.once("open", function() {
   console.log("Mongoose connection successful.");
 });
 
-// Main route (simple Hello World Message)
+// Main route 
 app.get("/", function(req, res) {
   res.render("index");
 });
 
-// A GET request to scrape the echojs website
+// A GET request to scrape the YCombinator website
 app.get("/scrape", function(req, res) {
   // First, we grab the body of the html with request
   request("https://news.ycombinator.com/", function(error, response, html) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(html);
   
-    // Now, we grab every h2 within an article tag, and do the following:
+    // Now, we grab every title within an article tag, and do the following:
     $(".title").each(function(i, element) {
 
       // Save an empty result object
@@ -76,11 +76,14 @@ app.get("/scrape", function(req, res) {
       //This effectively passes the result object to the entry (and the title and link)
       var entry = new Article(result); 
 
+      // Verify that the individual article doesn't exist 
       Article.count({"title": entry.title}, function (err, count){
+        // if it does exist, return
         if (count > 0){
           console.log(`document exists: ${entry.title}`);
           return;
         } else {
+            // if the article doesn't exist, save to db
             entry.save(function(err, doc) {
               // Log any errors
               if (err) {
@@ -93,11 +96,9 @@ app.get("/scrape", function(req, res) {
             });
           } 
       });
+    });
   });
 });
-
-});
-
 
 // This will get the articles we scraped from the mongoDB
 app.get("/articles", function(req, res) {
@@ -116,7 +117,6 @@ app.get("/articles", function(req, res) {
 
 // Grab an article by it's ObjectId
 app.post("/articles/:id", function(req, res) {
-  console.log(req.body.id);
   var newComment = new Comment(req.body)
 
   newComment.save(function(error,doc){
