@@ -169,6 +169,7 @@ app.delete("/delete/:id", function(req, res) {
     Comment.remove({ _id: commentID}, function(err) {
       if (!err) {
               console.log("no error");
+              res.send("Ok");
       }
       else {
               console.log("there is an error");

@@ -35,20 +35,26 @@
     }).done(function(data){
       $("#articles").empty();
         for (var i = 0; i < data.length; i++) {
-            // Display the apropos information on the page
-            $("#articles").append(
-            `<br/>
-            <div class="jumbotron">
-            <p> ${data[i].title} 
-            <br/>
-            <a href='${data[i].link}'>${data[i].link}</a>
-            </p>
-            <div class="panel panel-default">
-              <div class="panel-body">You Commented:  ${data[i].comment.body}</div>
-            </div>
-            <br/>
-            <div data-id=${data[i]._id} class="btn btn-danger scrape-new" id="delComment">Delete Comment</div>
-            </div>`);    
+
+            if (data[i].comment == null){
+              console.log("it is null");
+              continue;
+            } else {
+              // Display the apropos information on the page
+              $("#articles").append(
+                `<br/>
+                <div class="jumbotron">
+                <p> ${data[i].title} 
+                <br/>
+                <a href='${data[i].link}'>${data[i].link}</a>
+                </p>
+                <div class="panel panel-default">
+                  <div class="panel-body">You Commented:  ${data[i].comment.body}</div>
+                </div>
+                <br/>
+                <div data-id=${data[i]._id} class="btn btn-danger scrape-new" id="delComment">Delete Comment</div>
+                </div>`);   
+            }
         };
     });
   });
