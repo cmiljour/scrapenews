@@ -29,8 +29,15 @@ app.use(express.static("public"));
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
-// Database configuration with mongoose
-mongoose.connect("mongodb://heroku_ndm9fhtf:u0i7ttnpphb42bpk7rqpgpk00j@ds135534.mlab.com:35534/heroku_ndm9fhtf");
+var databaseUri = "mongodb://heroku_ndm9fhtf:u0i7ttnpphb42bpk7rqpgpk00j@ds135534.mlab.com:35534/heroku_ndm9fhtf";
+
+if (process.env.MONGODB_URI) {
+  
+  mongoose.connect(process.env.MONGODB_URI);
+} else {
+  mongoose.connect(databaseUri);
+}
+
 var db = mongoose.connection;
 
 // Show any mongoose errors
