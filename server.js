@@ -88,9 +88,8 @@ app.get("/scrape", function(req, res) {
               // Log any errors
               if (err) {
                 console.log(err);
-              }
-              // Or log the doc
-              else {
+              } else {
+                // Or log the doc
                 console.log(`db updated`);
               }
             });
@@ -107,11 +106,10 @@ app.get("/articles", function(req, res) {
     // Log any errors
     if (error) {
       console.log(error);
-    }
-    // Or send the doc to the browser as a json object
-    else {
-      res.json(doc);
-    }
+    } else {
+        // Or send the doc to the browser as a json object 
+        res.json(doc);
+      }
   });
 });
 
@@ -122,42 +120,18 @@ app.post("/articles/:id", function(req, res) {
   newComment.save(function(error,doc){
     if (error){
       console.log(error);
-    }
-
-    else {
-      Article.findOneAndUpdate({"_id":req.params.id}, {"comment": doc.id})
-
-      .exec(function(err, doc){
-        if(err){
-          console.log(err);
-        }
-        else {
-          res.send(doc);
-        }
-      });
-    }
+    } else {
+        Article.findOneAndUpdate({"_id":req.params.id}, {"comment": doc.id})
+        .exec(function(err, doc){
+          if(err){
+            console.log(err);
+          }
+          else {
+            res.send(doc);
+          }
+        });
+      }
   });
-
-  // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
-  // Article.findOne({ "_id": req.params.id }, function (err, article){
-  // })
-  // // ..and populate all of the notes associated with it
-  // // .populate("Comment")
-  // // now, execute our query
-  // .exec(function(error, doc) {
-  //   // Log any errors
-  //   if (error) {
-  //     console.log(error);
-  //   }
-  //   // Otherwise, send the doc to the browser as a json object
-  //   else {
-  //     Comment.update({_id: doc.id}, {
-  //       body: newComment
-  //     }, function (err, affected, resp) {
-  //       console.log(resp);
-  //     })
-  //   }
-  // });
 });
 
 app.delete("/delete/:id", function(req, res) {
@@ -174,10 +148,8 @@ app.delete("/delete/:id", function(req, res) {
       else {
               console.log("there is an error");
       }
+    });
   });
-});
-  
-  
 });
 
 
